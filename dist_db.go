@@ -24,7 +24,11 @@ func main() {
 		log.Fatal("Unable to resolve IP address")
 		os.Exit(1)
 	}
-	c := os.Getenv("CLUSTER_ADDR")
+	c := ""
+	if len(os.Args) == 2 {
+		c = os.Args[1]
+	}
+	fmt.Println("Cluster Addr: ", c)
 
 	cluster, err := setupCluster(a, c)
 	if err != nil {

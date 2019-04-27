@@ -9,3 +9,10 @@ This repo was created by following https://jacobmartins.com/2017/01/29/practical
 "github.com/pkg/errors"
 "golang.org/x/sync/errgroup"
 ```
+
+## Initial Node Call
+go run dist_db.go 
+
+## Joining Node Call
+go run dist_db.go 192.168.1.10
+*** The IP address will be any other IP of a node on the network that is running. 
