@@ -73,7 +73,7 @@ func setupCluster(advertiseAddr string, clusterAddr string) (*serf.Serf, error) 
 
 	_, err = cluster.Join([]string{clusterAddr}, true)
 	if err != nil {
-		log.Printf("Couldn't join cluster, start own: %v\n", err)
+		log.Printf("Couldn't join cluster, starting own cluster: %v\n", err)
 	}
 	return cluster, nil
 }
@@ -93,6 +93,7 @@ func launchHTTPAPI(db *cmd.OneAndOnlyNumber) {
 			if err != nil {
 				w.WriteHeader(http.StatusBadRequest)
 				fmt.Fprintf(w, "%v", err)
+				return
 			}
 			db.SetValue(newVal)
 			fmt.Fprintf(w, "%v", newVal)
