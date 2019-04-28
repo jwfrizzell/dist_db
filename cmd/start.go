@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"sync"
 )
 
@@ -19,6 +20,7 @@ func InitTheNumber(val int) *OneAndOnlyNumber {
 }
 
 func (n *OneAndOnlyNumber) SetValue(newVal int) {
+	fmt.Println("SetValue: ", newVal)
 	n.numMutex.Lock()
 	defer n.numMutex.Unlock()
 	n.num = newVal

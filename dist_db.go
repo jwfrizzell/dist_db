@@ -19,16 +19,9 @@ import (
 )
 
 func main() {
-	a := resolveIP()
-	if len(a) == 0 {
-		log.Fatal("Unable to resolve IP address")
-		os.Exit(1)
-	}
-	c := ""
-	if len(os.Args) == 2 {
-		c = os.Args[1]
-	}
-	fmt.Println("Cluster Addr: ", c)
+	a := os.Getenv("ADVERTISE_ADDR")
+	c := os.Getenv("CLUSTER_ADDR")
+	m := os.Getenv("MASTER_ADDR")
 
 	cluster, err := setupCluster(a, c)
 	if err != nil {
@@ -36,7 +29,7 @@ func main() {
 	}
 	defer cluster.Leave()
 	theOneAndOnlyNumber := cmd.InitTheNumber(42)
-	launchHTTPAPI(theOneAndOnlyNumber)
+	launchHTTPAPI(theOneAndOnlyNumber, m)
 
 	ctx := context.Background()
 	if name, err := os.Hostname(); err == nil {
@@ -78,7 +71,7 @@ func setupCluster(advertiseAddr string, clusterAddr string) (*serf.Serf, error) 
 	return cluster, nil
 }
 
-func launchHTTPAPI(db *cmd.OneAndOnlyNumber) {
+func launchHTTPAPI(db *cmd.OneAndOnlyNumber, mast_addr string) {
 	go func() {
 		m := mux.NewRouter()
 
@@ -88,6 +81,10 @@ func launchHTTPAPI(db *cmd.OneAndOnlyNumber) {
 		})
 
 		m.HandleFunc("/set/{newVal}", func(w http.ResponseWriter, r *http.Request) {
+			if len(mast_addr) > 0 {
+				fmt.Printf("Master node cannot set value.")
+				return
+			}
 			vars := mux.Vars(r)
 			newVal, err := strconv.Atoi(vars["newVal"])
 			if err != nil {
@@ -158,7 +155,10 @@ func notifyOthers(ctx context.Context, otherMembers []serf.Member, db *cmd.OneAn
 		randIndex := rand.Int() % len(otherMembers)
 		for i := 0; i < cmd.MembersToNotify; i++ {
 			g.Go(func() error {
-				return notifyMember(ctx, otherMembers[(randIndex+i)%len(otherMembers)].Addr.String(), db)
+				return notifyMember(
+					ctx,
+					otherMembers[(randIndex+i)%len(otherMembers)].Addr.String(),
+					db)
 			})
 		}
 	}
